@@ -4,17 +4,17 @@ using UnityEngine;
 
 namespace MF.Tools
 {
-    public abstract class ElementData
+    public abstract class ComponentData
     {
         private string name;
         private Rect rect;
-        private List<ElementData> children;
+        private List<ComponentData> children;
 
         public string Name => name;
         public Rect Rect => rect;
-        public List<ElementData> Children { get => children; set => children = value; } 
+        public List<ComponentData> Children { get => children; set => children = value; } 
 
-        public ElementData(string name, Rect rect)
+        public ComponentData(string name, Rect rect)
         {
             this.name = name;
             this.rect = rect;

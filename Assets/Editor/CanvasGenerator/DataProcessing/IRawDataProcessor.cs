@@ -2,7 +2,7 @@ namespace MF.Tools
 {
     public interface IRawDataProcessor
     {
-        public CanvasElementData GetUIElementData(string rawData);
+        public CanvasComponentData GetUIElementData(string rawData);
     }
 
 }
