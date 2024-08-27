@@ -15,7 +15,7 @@ namespace MF.Tools
         public string Name { get => name; set => name = value; }
         public Dictionary<string, string> AttributeDataById { get => attributesById; set => attributesById = value; }
 
-        public List<IElement> Children;
+        public List<Component> Children;
     }
 
     public struct Frame : IElement
@@ -28,6 +28,7 @@ namespace MF.Tools
         public Dictionary<string, string> AttributeDataById { get => attributesById; set => attributesById = value; }
 
         public List<Group> Groups;
+        public List<Component> Children;
     }
 
     public struct Component : IElement 

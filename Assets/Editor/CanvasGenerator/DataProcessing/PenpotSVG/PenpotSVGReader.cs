@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Xml;
+using UnityEngine;
+using static UnityEngine.Rendering.VolumeComponent;
 
 namespace MF.Tools
 {
@@ -13,58 +15,69 @@ namespace MF.Tools
             XmlDocument document = new XmlDocument();
             document.LoadXml(svgContent);
 
-            XmlNodeList groupNodes = document.GetElementsByTagName("g");
-            foreach (XmlNode node in groupNodes)
-            {
-                var children = new List<IElement>();
+            XmlNode root = document.DocumentElement;
+            var rootFilteredNode = (FilteredNode)ProcessNode(root);
 
-                foreach (XmlNode child in node.ChildNodes)
-                {
-                    var element = new Component
-                    {
-                        Name = node.Name,
-                        AttributeDataById = new Dictionary<string, string>()
-                    };
-
-                    foreach (XmlAttribute attr in child.Attributes)
-                    {
-                        element.AttributeDataById[attr.Name] = attr.Value;
-                    }
-
-                    children.Add(element);
-                }
-
-                var group = new Group
-                {
-                    Id = node.Attributes["id"]?.Value,
-                    Name = node.Attributes["data-testid"]?.Value,
-                    Children = children
-                };
-
-                svgGroups.Add(group);
-            }
+            PrintNodes(rootFilteredNode, 0);
 
             return new CanvasConfig();
         }
 
-        private void ProcessNode(XmlNode node)
+        private FilteredNode? ProcessNode(XmlNode node)
         {
-            foreach (XmlNode childNode in node.ChildNodes)
+            if (node is XmlElement)
             {
-                if (childNode is XmlElement)
+                FilteredNode filteredNode = new FilteredNode
                 {
-                    if(childNode.Name == "g")
-                    {
-                        var group = new Group
-                        {
-                            Id = childNode.Attributes["id"]?.Value,
-                            Name = node.Attributes["data-testid"]?.Value,
+                    Tag = node.Name,
+                    Id = node.Attributes["id"]?.Value,
+                    Name = node.Attributes["data-testid"]?.Value,
+                    AttributeDataById = new Dictionary<string, string>(),
+                    ChildNodes = new List<FilteredNode> ()
+                };
 
-                        };
-                    }
+                foreach (XmlAttribute attribute in node.Attributes)
+                {
+                    filteredNode.AttributeDataById.Add(attribute.Name, attribute.Value);
                 }
+
+                foreach (XmlNode childNode in node.ChildNodes)
+                {
+                    var processedChildNode = ProcessNode(childNode);
+
+                    if (processedChildNode != null)
+                        filteredNode.ChildNodes.Add((FilteredNode)processedChildNode);
+                }
+
+                //Debug.Log($"Tag: {filteredNode.Tag},  Name: {filteredNode.Id}");
+
+                return filteredNode;
             }
+            else
+                return null;
         }
+
+        private void PrintNodes(FilteredNode node, int depth)
+        {
+            string indent = new string(' ', depth * 4);
+            Debug.Log($"{indent}Tag: {node.Tag}, Name: {node.Name}");
+
+            foreach (var childNode in node.ChildNodes)
+            {
+                PrintNodes(childNode, depth + 1);
+            }
+
+        }
+    }
+
+    public struct FilteredNode
+    {
+        public string Id;
+        public string Name;
+        public string Tag;
+        public Dictionary<string, string> AttributeDataById;
+
+        public List<FilteredNode> ChildNodes;
     }
 
 
